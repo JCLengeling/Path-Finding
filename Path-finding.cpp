@@ -2,99 +2,152 @@
 using namespace std;
 
 
-bool fieldOK(const int index, const int nMapWidth, const int nMapHeight, const unsigned char* pMap){
+int *bestcost;
+const unsigned char* map;
+int width;
+int height;
+int targetIndex;
 
-    if (index <0 || index >= nMapWidth * nMapHeight){
-        return false;
+
+struct Option{
+    int distance;
+    int index;
+    Option(int distance, int index){this->distance=distance, this->index=index;}
+
+    bool operator <(const Option& i) const
+    {
+        return distance < i.distance;
     }
-    if (pMap[index] == 0){
-        return false;
+    bool operator >(const Option& i) const
+    {
+        return distance > i.distance;
     }
-    if (pMap[index] == 1){
-        return true;
+};
+
+int distanceBetweenIndex(const int indexA, const int indexB){
+
+    int aX = indexA % width;
+    int bX = indexB % width;
+
+    int aY = 0;
+    int bY = 0;
+
+    if(indexA > width || indexA <0){
+        aY = indexA/width;
     }
+    if(indexB > width || indexB <0){
+        bY = indexB/width;
+    }
+
+    int deltaX = abs(aX-bX);
+    int deltaY = abs(aY-bY);
+    return deltaX + deltaY;
 }
 
-vector<int> iterate( int *bestPathCost,  const int index, const int targetIndex, const int nMapWidth, const int nMapHeight ,vector<int> currentPath, const unsigned char* pMap ){
-    //cout <<"besPathCost: " <<*bestPathCost << endl;
-    if (bestPathCost == new int(-1) | currentPath.size() <*bestPathCost ){
+int indexCalculate(const int currrentX, const int currentY){
+    return currrentX + width * currentY;
+}
 
-        int lastIndex = currentPath[currentPath.size()-1];
+
+vector<int> iterate(   const int index ,vector<int> currentPath){
+
+    if (bestcost == new int(-1) | currentPath.size() <*bestcost ){
 
         currentPath.push_back(index);
 
-        int up  = index - nMapWidth, down = index + nMapWidth, left, right;
+        std::priority_queue<Option, std::vector<Option>, std::greater<Option> > heap;
+
+        if (index % width == 0){
+            if (index - width == targetIndex){
+                currentPath.push_back(index - width);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index + width == targetIndex){
+                currentPath.push_back(index + width);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index+1 == targetIndex){
+                currentPath.push_back(index+1);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }
+
+            if (index -width != currentPath[currentPath.size()-2] && map[index - width] == 1){
+                heap.push(Option(distanceBetweenIndex(index - width, targetIndex), index-width));
+            }
+            if (index + width != currentPath[currentPath.size()-2] && map[index +width] ==1){
+                heap.push(Option(distanceBetweenIndex(index + width, targetIndex), index+width));
+            }
+            if (index+1 != currentPath[currentPath.size()-2] && map[index+1]==1){
+                heap.push(Option(distanceBetweenIndex(index+1, targetIndex), index+1));
+            }
 
 
-        if (index % nMapWidth == 0){
-            left = -1;
-            right = index +1;
-        }else if (index % nMapWidth == nMapWidth-1){
-            left = index -1;
-            right = -1;
+        }else if (index % width == width-1){
+            if (index - width == targetIndex){
+                currentPath.push_back(index - width);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index + width == targetIndex){
+                currentPath.push_back(index + width);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index-1 == targetIndex){
+                currentPath.push_back(index-1);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }
+
+            if (index -width != currentPath[currentPath.size()-2] && map[index - width]==1){
+                heap.push(Option(distanceBetweenIndex(index - width, targetIndex), index-width));
+            }
+            if (index + width != currentPath[currentPath.size()-2] && map[index +width]==1){
+                heap.push(Option(distanceBetweenIndex(index + width, targetIndex), index+width));
+            }
+
+            if (index-1 != currentPath[currentPath.size()-2] && map[index-1] ==1){
+                heap.push(Option(distanceBetweenIndex(index-1, targetIndex), index-1));
+            }
+
         }else {
-            left = index -1;
-            right = index + 1;
+            if (index - width == targetIndex){
+                currentPath.push_back(index - width);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index + width == targetIndex){
+                currentPath.push_back(index + width);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index-1 == targetIndex){
+                currentPath.push_back(index-1);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }else if (index+1 == targetIndex){
+                currentPath.push_back(index+1);
+                *bestcost = currentPath.size()-1;
+                return currentPath;
+            }
+
+            if (index -width != currentPath[currentPath.size()-2] && map[index - width]==1){
+                heap.push(Option(distanceBetweenIndex(index - width, targetIndex), index-width));
+            }
+            if (index + width != currentPath[currentPath.size()-2] && map[index +width]==1){
+                heap.push(Option(distanceBetweenIndex(index + width, targetIndex), index+width));
+            }
+            if (index+1 != currentPath[currentPath.size()-2] && map[index+1]==1){
+                heap.push(Option(distanceBetweenIndex(index+1, targetIndex), index+1));
+            }
+            if (index-1 != currentPath[currentPath.size()-2] && map[index-1]==1){
+                heap.push(Option(distanceBetweenIndex(index-1, targetIndex), index-1));
+            }
         }
-
-
-        if (up == targetIndex){
-            currentPath.push_back(up);
-            *bestPathCost = currentPath.size()-1;
-            return currentPath;
-        }else if (down == targetIndex){
-            currentPath.push_back(down);
-            *bestPathCost = currentPath.size()-1;
-            return currentPath;
-        }else if (left == targetIndex){
-            currentPath.push_back(left);
-            *bestPathCost = currentPath.size()-1;
-            return currentPath;
-        }else if (right == targetIndex){
-            currentPath.push_back(right);
-            *bestPathCost = currentPath.size()-1;
-            return currentPath;
-        }
-
         vector<int> ret = {} ;
-
-      //  cout << "index in iterate " << index << endl;
-      //  cout << "lastindex " << lastIndex << endl;
-      //  cout << "up " << up << " down " << down << " left " << left << " right " << right <<  endl << endl;
-      //  cin.get();
-
-        if (up != lastIndex && fieldOK(up, nMapWidth, nMapHeight, pMap)){
-            vector<int> upReturn =  iterate( bestPathCost, up, targetIndex, nMapWidth, nMapHeight ,currentPath, pMap );
-            if (!upReturn.empty() && (ret.empty()||ret.size()> upReturn.size() )){
-                vector<int>::iterator it;
-                it=upReturn.begin();
-                ret.assign (it, upReturn.end());
+        while(heap.size()>0) {
+            vector<int> tmp =  iterate( heap.top().index ,currentPath );
+            if (!tmp.empty() && (ret.empty()||ret.size()> tmp.size() )){
+                ret.swap(tmp);
             }
-        }
-        if(down != lastIndex && fieldOK(down, nMapWidth, nMapHeight, pMap)){
-            vector<int> downReturn =  iterate( bestPathCost, down, targetIndex, nMapWidth, nMapHeight ,currentPath, pMap );
-            if (!downReturn.empty() && (ret.empty()|| ret.size()> downReturn.size())){
-                vector<int>::iterator it;
-                it=downReturn.begin();
-                ret.assign ( it, downReturn.end());
-            }
-        }
-        if(left != lastIndex && fieldOK(left, nMapWidth, nMapHeight, pMap)){
-
-            vector<int> leftReturn =  iterate( bestPathCost, left, targetIndex, nMapWidth, nMapHeight ,currentPath, pMap );
-            if (!leftReturn.empty() && (ret.empty()||ret.size()> leftReturn.size())){
-                vector<int>::iterator it;
-                it=leftReturn.begin();
-                ret.assign (it, leftReturn.end());
-            }
-        }
-        if(right != lastIndex && fieldOK(right, nMapWidth, nMapHeight, pMap)){
-            vector<int> rightReturn =  iterate( bestPathCost, right, targetIndex, nMapWidth, nMapHeight ,currentPath, pMap );
-            if (!rightReturn.empty() && (ret.empty()||ret.size()> rightReturn.size())){
-                vector<int>::iterator it;
-                it=rightReturn.begin();
-                ret.assign (it, rightReturn.end());
-            }
+           heap.pop();
         }
         return ret;
     }
@@ -109,85 +162,73 @@ int FindPath(const int nStartX, const int nStartY,
              const unsigned char* pMap, const int nMapWidth, const int nMapHeight,
              int* pOutBuffer, const int nOutBufferSize){
 
-    const int currentIndex = nStartX + nMapWidth * nStartY, targetIndex = nTargetX +nMapWidth * nTargetY;
-    int *bestPathCost = new int(-1);
 
+    map = pMap;
+    width = nMapWidth;
+    height= nMapHeight;
+    bestcost = new int(-1);
+    targetIndex = indexCalculate(nTargetX, nTargetY);
+    const int currentIndex = indexCalculate(nStartX,nStartY) ;
 
-
-
-
-   // cout << "currentIndex: " << currentIndex << endl;
-   // cout << "targetIndex: " << targetIndex << endl;
-
-    // 4 cases
-    // up down left right
-
-    int up  = currentIndex - nMapWidth, down = currentIndex + nMapWidth, left, right;
+    std::priority_queue<Option, std::vector<Option>, std::greater<Option> > heap;
 
 
     if (currentIndex % nMapWidth == 0){
-        left = -1;
-        right = currentIndex +1;
+        if ( map[currentIndex - nMapWidth]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex - nMapWidth, targetIndex), currentIndex-nMapWidth));
+        }
+        if (  map[currentIndex + nMapWidth]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex + nMapWidth, targetIndex), currentIndex+nMapWidth));
+        }
+        if ( map[currentIndex +1]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex +1, targetIndex), currentIndex +1));
+        }
     }else if (currentIndex % nMapWidth == nMapWidth){
-        left = currentIndex -1;
-        right = -1;
-    }else {
-        left = currentIndex -1;
-        right = currentIndex + 1;
-    }
+        if ( map[currentIndex - nMapWidth]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex - nMapWidth, targetIndex), currentIndex-nMapWidth));
+        }
+        if (  map[currentIndex + nMapWidth]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex + nMapWidth, targetIndex), currentIndex+nMapWidth));
+        }
 
+        if ( map[currentIndex -1]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex -1, targetIndex), currentIndex -1));
+        }
+    }else {
+        if ( map[currentIndex - nMapWidth]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex - nMapWidth, targetIndex), currentIndex-nMapWidth));
+        }
+        if (  map[currentIndex + nMapWidth]==1){
+            heap.push(Option(distanceBetweenIndex(currentIndex + nMapWidth, targetIndex), currentIndex+nMapWidth));
+        }
+
+        if ( map[currentIndex -1]==1) {
+            heap.push(Option(distanceBetweenIndex(currentIndex - 1, targetIndex), currentIndex - 1));
+        }
+        if ( map[currentIndex +1] ==1) {
+            heap.push(Option(distanceBetweenIndex(currentIndex + 1, targetIndex), currentIndex + 1));
+        }
+    }
 
     vector<int> ret = {} ;
-    if (fieldOK(up, nMapWidth, nMapHeight, pMap)){
-        //cout <<"Initial UP " << endl;
-        vector<int> tmp = {currentIndex};
-        vector<int> upReturn =  iterate( bestPathCost, up, targetIndex, nMapWidth, nMapHeight , tmp, pMap );
-        if (!upReturn.empty() && (ret.empty()|| ret.size()> upReturn.size())){
-            vector<int>::iterator it;
-            it=upReturn.begin();
-            ret.assign(it, upReturn.end());
+    while(heap.size()>0) {
+        vector<int> tmp =  iterate( heap.top().index  ,vector<int> {currentIndex} );
+        if (!tmp.empty() && (ret.empty()||ret.size()> tmp.size() )){
+            ret.swap(tmp);
         }
-    }
-    if(fieldOK(down, nMapWidth, nMapHeight, pMap)){
-        //cout <<"Initial DOWN " << endl;
-        vector<int> tmp = {currentIndex};
-        vector<int> downReturn =  iterate( bestPathCost, down, targetIndex, nMapWidth, nMapHeight , tmp, pMap );
-        if (!downReturn.empty() && (ret.empty()||ret.size()> downReturn.size())){
-            vector<int>::iterator it;
-            it=downReturn.begin();
-            ret.assign (it, downReturn.end());
-        }
-    }
-    if(fieldOK(left, nMapWidth, nMapHeight, pMap)){
-        //cout <<"Initial LEFT " << endl;
-        vector<int> tmp = {currentIndex};
-        vector<int> leftReturn =  iterate( bestPathCost, left, targetIndex, nMapWidth, nMapHeight ,tmp, pMap );
-        if (!leftReturn.empty() && (ret.empty()||ret.size()> leftReturn.size())){
-            vector<int>::iterator it;
-            it=leftReturn.begin();
-            ret.assign (it, leftReturn.end());
-        }
-    }
-    if(fieldOK(right, nMapWidth, nMapHeight, pMap)){
-        //cout <<"Initial RIGHT " << endl;
-        vector<int> tmp = {currentIndex};
-        vector<int> rightReturn =  iterate( bestPathCost, right, targetIndex, nMapWidth, nMapHeight ,tmp, pMap );
-        if (!rightReturn.empty() && (ret.empty()||ret.size()> rightReturn.size())){
-            vector<int>::iterator it;
-            it=rightReturn.begin();
-            ret.assign (it, rightReturn.end());
-        }
+        heap.pop();
     }
 
+    if (ret.size() < nOutBufferSize){
     for (int i = 1; i < ret.size() ; ++i) {
         pOutBuffer[i-1] = ret[i];
-    }
+    }}
 
-    //cout << endl;
-    return *bestPathCost;
+    return *bestcost;
 
 }
 
+/*
 int main (){
     unsigned char pMap[] = {1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1};
     int pOutBuffer[12];
@@ -197,7 +238,7 @@ int main (){
     int pOutBuffer2[7];
    cout << FindPath(2, 0, 0, 2, pMap2, 3, 3, pOutBuffer2, 7) <<endl;
 
-
-    // cout << "Press enter to continue ...";
-   // cin.get();
 }
+ */
+
+
