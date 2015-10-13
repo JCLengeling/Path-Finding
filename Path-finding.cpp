@@ -228,9 +228,10 @@ int FindPath(const int nStartX, const int nStartY,
 
 }
 
-/*
+
 int main (){
     unsigned char pMap[] = {1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1};
+
     int pOutBuffer[12];
     cout << FindPath(0, 0, 1, 2, pMap, 4, 3, pOutBuffer, 12) << endl;
 
@@ -239,6 +240,6 @@ int main (){
    cout << FindPath(2, 0, 0, 2, pMap2, 3, 3, pOutBuffer2, 7) <<endl;
 
 }
- */
+
 
 
