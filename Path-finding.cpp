@@ -5,6 +5,7 @@ struct Option{
     int distance;
     int index;
     int lastIndex;
+    Option();
     Option(int distance, int index, int lastIndex){this->distance=distance, this->index=index; this->lastIndex=lastIndex;}
 
     bool operator <(const Option& i) const
@@ -15,7 +16,19 @@ struct Option{
     {
         return distance > i.distance;
     }
+    bool operator ==(const Option& i) const
+    {
+        return index == i.index;
+    }
 };
+
+bool contain(vector<int> v, int x){
+    if(std::find(v.begin(), v.end(), x) != v.end()) {
+        return true;
+    } else {
+      return false;
+    }
+}
 
 int distanceBetweenIndex(const int indexA, const int indexB, const int width){
 
@@ -51,43 +64,58 @@ int FindPath(const int nStartX, const int nStartY,
     const int currentIndex = indexCalculate(nStartX,nStartY, nMapWidth) ;
 
     std::priority_queue<Option, std::vector<Option>, std::greater<Option> > heap;
-    std::vector<Option>  processed (nMapHeight*nMapWidth, Option(-1,-2,-1));
+    //std::vector<Option>  processed (nMapHeight*nMapWidth, Option(-1,-2,-1));
 
-    processed.at(currentIndex) = Option{-1,-3,currentIndex};
+    std::vector<Option>  processed;
+    std::vector<int>visited;
+
+    //processed.at(currentIndex) = Option{-1,-3,currentIndex};
+    processed.push_back(Option{-1,currentIndex,currentIndex});
+    visited.push_back(currentIndex);
 
     if (currentIndex % nMapWidth == 0){
         if ( pMap[currentIndex - nMapWidth]==1){
+            visited.push_back(currentIndex - nMapWidth);
             heap.push(Option(distanceBetweenIndex(currentIndex - nMapWidth, targetIndex,nMapWidth), currentIndex-nMapWidth, currentIndex));
         }
         if (  pMap[currentIndex + nMapWidth]==1){
+            visited.push_back(currentIndex + nMapWidth);
             heap.push(Option(distanceBetweenIndex(currentIndex + nMapWidth, targetIndex,nMapWidth), currentIndex+nMapWidth, currentIndex));
         }
         if ( pMap[currentIndex +1]==1){
+            visited.push_back(currentIndex +1);
             heap.push(Option(distanceBetweenIndex(currentIndex +1, targetIndex,nMapWidth), currentIndex +1, currentIndex));
         }
     }else if (currentIndex % nMapWidth == nMapWidth){
         if ( pMap[currentIndex - nMapWidth]==1){
+            visited.push_back(currentIndex - nMapWidth);
             heap.push(Option(distanceBetweenIndex(currentIndex - nMapWidth, targetIndex,nMapWidth), currentIndex-nMapWidth, currentIndex));
         }
         if (  pMap[currentIndex + nMapWidth]==1){
+            visited.push_back(currentIndex + nMapWidth);
             heap.push(Option(distanceBetweenIndex(currentIndex + nMapWidth, targetIndex,nMapWidth), currentIndex+nMapWidth, currentIndex));
         }
 
         if ( pMap[currentIndex -1]==1){
+            visited.push_back(currentIndex - 1);
             heap.push(Option(distanceBetweenIndex(currentIndex -1, targetIndex,nMapWidth), currentIndex -1, currentIndex));
         }
     }else {
         if ( pMap[currentIndex - nMapWidth]==1){
+            visited.push_back(currentIndex - nMapWidth);
             heap.push(Option(distanceBetweenIndex(currentIndex - nMapWidth, targetIndex,nMapWidth), currentIndex-nMapWidth, currentIndex));
         }
         if (  pMap[currentIndex + nMapWidth]==1){
+            visited.push_back(currentIndex + nMapWidth);
             heap.push(Option(distanceBetweenIndex(currentIndex + nMapWidth, targetIndex,nMapWidth), currentIndex+nMapWidth, currentIndex));
         }
 
         if ( pMap[currentIndex -1]==1) {
+            visited.push_back(currentIndex - 1);
             heap.push(Option(distanceBetweenIndex(currentIndex - 1, targetIndex,nMapWidth), currentIndex - 1, currentIndex));
         }
         if ( pMap[currentIndex +1] ==1) {
+            visited.push_back(currentIndex +1);
             heap.push(Option(distanceBetweenIndex(currentIndex + 1, targetIndex,nMapWidth), currentIndex + 1, currentIndex));
         }
     }
@@ -98,7 +126,7 @@ int FindPath(const int nStartX, const int nStartY,
     if(heap.size()>0){
     current = heap.top();
 
-    processed.at(current.index) = current;
+    processed.push_back(current);
     heap.pop();
     }
 
@@ -112,48 +140,61 @@ int FindPath(const int nStartX, const int nStartY,
         //current.index + 1 right
         //current.index -1 left
         if (current.index % nMapWidth == 0){
-            if ( pMap[current.index - nMapWidth] == 1&&  processed.at(current.index -nMapWidth).index == -2 ){
+            if ( pMap[current.index - nMapWidth] == 1&&  !contain(visited, current.index-nMapWidth)){
+                visited.push_back(current.index - nMapWidth);
                 heap.push(Option(distanceBetweenIndex(current.index - nMapWidth, targetIndex,nMapWidth), current.index-nMapWidth, current.index));
             }
-            if ( pMap[current.index +nMapWidth] ==1 &&processed.at(current.index + nMapWidth).index == -2 ){
+            if ( pMap[current.index +nMapWidth] ==1 && !contain(visited, current.index + nMapWidth)){
+                visited.push_back(current.index + nMapWidth);
                 heap.push(Option(distanceBetweenIndex(current.index + nMapWidth, targetIndex,nMapWidth), current.index+nMapWidth, current.index));
             }
-            if ( pMap[current.index+1]==1&&processed.at(current.index+1).index == -2 ){
+            if ( pMap[current.index+1]==1&& !contain(visited,current.index+1) ){
+                visited.push_back(current.index +1);
                 heap.push(Option(distanceBetweenIndex(current.index+1, targetIndex,nMapWidth), current.index+1, current.index));
             }
         }else if (current.index % nMapWidth == nMapWidth-1){
-            if (pMap[current.index - nMapWidth]==1 &&processed.at(current.index -nMapWidth).index == -2  ){
+            if (pMap[current.index - nMapWidth]==1 && ! contain(visited,current.index -nMapWidth)  ){
+                visited.push_back(current.index - nMapWidth);
                 heap.push(Option(distanceBetweenIndex(current.index - nMapWidth, targetIndex,nMapWidth), current.index-nMapWidth, current.index));
             }
-            if (pMap[current.index +nMapWidth]==1 &&processed.at(current.index + nMapWidth).index == -2  ){
+            if (pMap[current.index +nMapWidth]==1 && ! contain(visited,current.index + nMapWidth)  ){
+                visited.push_back(current.index + nMapWidth);
                 heap.push(Option(distanceBetweenIndex(current.index + nMapWidth, targetIndex,nMapWidth), current.index+nMapWidth, current.index));
             }
-            if (pMap[current.index-1] ==1 &&processed.at(current.index-1).index == -2  ){
+            if (pMap[current.index-1] ==1 && ! contain(visited, current.index-1)  ){
+                visited.push_back(current.index - 1);
                 heap.push(Option(distanceBetweenIndex(current.index-1, targetIndex,nMapWidth), current.index-1, current.index));
             }
         }else {
-            if (pMap[current.index - nMapWidth]==1&&processed.at(current.index -nMapWidth).index == -2  ){
+            if (pMap[current.index - nMapWidth]==1&& !contain(visited, current.index -nMapWidth)){
+                visited.push_back(current.index - nMapWidth);
                 heap.push(Option(distanceBetweenIndex(current.index - nMapWidth, targetIndex,nMapWidth), current.index-nMapWidth, current.index));
             }
-            if (pMap[current.index +nMapWidth]==1&&processed.at(current.index + nMapWidth).index == -2  ){
+            if (pMap[current.index +nMapWidth]==1&& !contain(visited,current.index + nMapWidth)){
+                visited.push_back(current.index + nMapWidth);
                 heap.push(Option(distanceBetweenIndex(current.index + nMapWidth, targetIndex,nMapWidth), current.index+nMapWidth, current.index));
             }
-            if (pMap[current.index+1]==1&&processed.at(current.index+1).index == -2 ){
+            if (pMap[current.index+1]==1&& ! contain(visited, current.index+1) ){
+                visited.push_back(current.index + 1);
                 heap.push(Option(distanceBetweenIndex(current.index+1, targetIndex,nMapWidth), current.index+1, current.index));
             }
-            if ( pMap[current.index-1]==1&&processed.at(current.index-1).index == -2 ){
+            if ( pMap[current.index-1]==1&& ! contain(visited, current.index-1) ){
+                visited.push_back(current.index - 1);
                 heap.push(Option(distanceBetweenIndex(current.index-1, targetIndex,nMapWidth), current.index-1, current.index));
             }
         }
 
         if(heap.size()>0){
             current = heap.top();
-            processed.at(current.index) = current;
+            processed.push_back(current);
             heap.pop();
         }else{
             break;
         }
     }
+
+
+
 
 
     vector<int> ret = {};
@@ -165,10 +206,14 @@ int FindPath(const int nStartX, const int nStartY,
         int lastIndex = solution.lastIndex;
         while (lastIndex!=currentIndex){
             ret.push_back(lastIndex);
-            lastIndex= processed.at(lastIndex).lastIndex;
+            int index;
+            for(std::vector<Option>::iterator it = processed.begin(); it != processed.end(); ++it) {
+                if(lastIndex == it->index){
+                    lastIndex = it->lastIndex;
+                }
+            }
         }
     }
-
 
 
     if (ret.size() < nOutBufferSize){
@@ -180,7 +225,7 @@ int FindPath(const int nStartX, const int nStartY,
 
 }
 
-
+/*
 int main (){
     unsigned char pMap[] = {1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1};
 
@@ -257,3 +302,4 @@ int main (){
     cout << FindPath(0, 0, 3, 479, pMap3, 4, 480, pOutBuffer3, 960*2) << endl;
 
 }
+*/
